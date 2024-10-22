@@ -1,0 +1,16 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "tobeh.Avallone.Server", "tobeh.Avallone.Server\tobeh.Avallone.Server.csproj", "{D35A9418-E27C-48C1-8C83-C8E07EECC01B}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{D35A9418-E27C-48C1-8C83-C8E07EECC01B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D35A9418-E27C-48C1-8C83-C8E07EECC01B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D35A9418-E27C-48C1-8C83-C8E07EECC01B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D35A9418-E27C-48C1-8C83-C8E07EECC01B}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal
