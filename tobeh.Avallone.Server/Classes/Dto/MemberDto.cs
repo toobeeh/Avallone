@@ -1,7 +1,6 @@
 using Tapper;
-using tobeh.Valmar;
 
-namespace tobeh.Avallone.Server.Hubs;
+namespace tobeh.Avallone.Server.Classes.Dto;
 
 [TranspilationSource]
 public record MemberDto(string Username, int Login);

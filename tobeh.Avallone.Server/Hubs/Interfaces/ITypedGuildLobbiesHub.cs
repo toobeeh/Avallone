@@ -1,4 +1,4 @@
-using tobeh.Avallone.Server.Dto;
+using tobeh.Avallone.Server.Classes.Dto;
 using tobeh.Valmar;
 using TypedSignalR.Client;
 

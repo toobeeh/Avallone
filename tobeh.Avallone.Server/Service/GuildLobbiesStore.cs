@@ -1,5 +1,5 @@
 using System.Collections.Concurrent;
-using tobeh.Avallone.Server.Dto;
+using tobeh.Avallone.Server.Classes.Dto;
 
 namespace tobeh.Avallone.Server.Service;
 

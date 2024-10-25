@@ -1,3 +1,4 @@
+using tobeh.Avallone.Server.Util;
 using tobeh.Valmar;
 
 namespace tobeh.Avallone.Server.Authentication;
@@ -61,7 +62,7 @@ public class TypoTokenHandler(
             
             claims.Add(new Claim(ClaimTypes.NameIdentifier, member.Login.ToString()));
             claims.Add(new Claim(ClaimTypes.Name, member.Username));
-            claims.AddRange(member.ServerConnections.Select(invite => new Claim(TypoTokenDefaults.GuildClaimName, invite.ToString())));
+            claims.AddRange(TypoTokenHandlerHelper.CreateServerConnectionClaims(member.ServerConnections));
             
             return claims;
         }

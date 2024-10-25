@@ -5,9 +5,19 @@
         <TargetFramework>net8.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
+        <LocalValmarSource>C:\Users\tobeh\repos\Valmar\tobeh.Valmar.Client\tobeh.Valmar.Client.csproj</LocalValmarSource>
     </PropertyGroup>
+    
+    <!-- toggle between local and nuget valmar client -->
+    <ItemGroup Condition=" '$(LocalValmarSource)' != '' ">
+        <ProjectReference Include="$(LocalValmarSource)" />
+    </ItemGroup>
+    <ItemGroup Condition=" '$(LocalValmarSource)' == '' ">
+        <PackageReference Include="tobeh.Valmar.Client" Version="0.1.1729380828" />
+    </ItemGroup>
 
     <ItemGroup>
+        <PackageReference Include="KeyedSemaphores" Version="5.0.0" />
         <PackageReference Include="Quartz" Version="3.8.1" />
         <PackageReference Include="Quartz.Extensions.DependencyInjection" Version="3.8.1" />
         <PackageReference Include="Quartz.Extensions.Hosting" Version="3.8.1" />
@@ -15,16 +25,11 @@
         <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         <PrivateAssets>all</PrivateAssets>
       </PackageReference>
-      <PackageReference Include="tobeh.Valmar.Client" Version="0.1.1729380828" />
       <PackageReference Include="TypedSignalR.Client.TypeScript.Analyzer" Version="1.14.0">
         <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         <PrivateAssets>all</PrivateAssets>
       </PackageReference>
       <PackageReference Include="TypedSignalR.Client.TypeScript.Attributes" Version="1.14.0" />
-    </ItemGroup>
-
-    <ItemGroup>
-      <Folder Include="Util\" />
     </ItemGroup>
 
 </Project>

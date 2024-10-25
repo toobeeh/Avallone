@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
 using tobeh.Avallone.Server.Authentication;
-using tobeh.Avallone.Server.Dto;
+using tobeh.Avallone.Server.Classes.Dto;
 using tobeh.Avallone.Server.Hubs.Interfaces;
 using tobeh.Avallone.Server.Service;
 using tobeh.Valmar;
@@ -28,7 +28,7 @@ public class GuildLobbiesHub(
 
         var authorized = Context.User?.Claims
             .Where(claim => claim.Type == TypoTokenDefaults.GuildClaimName)
-            .Any(claim => claim.Value == guild.Invite.ToString()) ?? false;
+            .Any(claim => claim.Value == guild.GuildId.ToString()) ?? false;
         
         if(!authorized)
         {

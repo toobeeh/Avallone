@@ -1,7 +1,7 @@
 using Google.Protobuf.WellKnownTypes;
 using Microsoft.AspNetCore.SignalR;
 using Quartz;
-using tobeh.Avallone.Server.Dto;
+using tobeh.Avallone.Server.Classes.Dto;
 using tobeh.Avallone.Server.Hubs;
 using tobeh.Avallone.Server.Hubs.Interfaces;
 using tobeh.Avallone.Server.Service;
