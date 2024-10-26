@@ -19,12 +19,13 @@ public class LobbyHub(
     public override async Task OnDisconnectedAsync(Exception? exception)
     {
         logger.LogTrace("OnDisconnectedAsync(exception={exception})", exception);
+        logger.LogDebug("Client disconnected: {id}", Context.ConnectionId);
         
         var id = Context.ConnectionId;
         var context = lobbyContextStore.RetrieveContextFromClient(id);
         
         // remove context in store
-        lobbyContextStore.DetachContextFromClient(id);
+        await lobbyContextStore.DetachContextFromClient(id);
         await Groups.RemoveFromGroupAsync(context.OwnerClaim.LobbyId, id);
         
         // if client was owner, request new ownership claims from other clients
@@ -45,7 +46,7 @@ public class LobbyHub(
 
         var login = TypoTokenHandlerHelper.ExtractLoginClaim(Context.User?.Claims ?? []);
         var serverConnections = TypoTokenHandlerHelper.ExtractServerConnectionClaims(Context.User?.Claims ?? []);
-        var context = await lobbyContextStore.AttachContextToClient(Context.ConnectionId, lobbyDiscovery.Lobby.Link, lobbyDiscovery.PlayerId, login, serverConnections, lobbyDiscovery.OwnerClaimToken);
+        var context = lobbyContextStore.AttachContextToClient(Context.ConnectionId, lobbyDiscovery.Lobby.Link, lobbyDiscovery.PlayerId, login, serverConnections, lobbyDiscovery.OwnerClaimToken);
         
         // try to (re)claim ownership with existing token, eg when disconnected from lobby temporarily, or when server restarted
         var claimResult = await lobbyService.ClaimLobbyOwnership(context);
@@ -63,6 +64,12 @@ public class LobbyHub(
 
         // add client to lobby group
         await Groups.AddToGroupAsync(Context.ConnectionId, context.OwnerClaim.LobbyId);
+        
+        if(Context.ConnectionAborted.IsCancellationRequested)
+        {
+            logger.LogDebug("Connection aborted during setup, executing disconnect handler");
+            await OnDisconnectedAsync(null);
+        }
         
         return claimResult.State;
     }

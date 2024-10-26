@@ -4,7 +4,7 @@ using tobeh.Avallone.Server.Classes;
 
 namespace tobeh.Avallone.Server.Util;
 
-public class RsaHelper
+public static class RsaHelper
 {
     private static readonly RSA Rsa = new RSACryptoServiceProvider(512);
     

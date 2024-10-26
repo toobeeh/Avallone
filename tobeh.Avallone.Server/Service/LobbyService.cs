@@ -24,11 +24,11 @@ public class LobbyService(ILogger<LobbyService> logger, LobbyStore lobbyStore, L
                 lobby.AllowedServers.Select(s => s.ToString()).ToList(), ownerClaim));
     }
     
-    private async Task SaveTypoStateSettings(LobbyContext context, TypoLobbySettingsDto settings)
+    private async Task SetTypoStateSettings(LobbyContext context, TypoLobbySettingsDto settings)
     {
-        logger.LogTrace("SaveTypoStateSettings(settings={settings})", settings);
+        logger.LogTrace("SetTypoStateSettings(settings={settings})", settings);
         
-        await lobbiesClient.SaveSkribblLobbyTypoSettingsAsync(new SkribblLobbyTypoSettingsMessage
+        await lobbiesClient.SetSkribblLobbyTypoSettingsAsync(new SkribblLobbyTypoSettingsMessage
         {
             LobbyId = context.OwnerClaim.LobbyId,
             Description = settings.Description,
@@ -47,7 +47,7 @@ public class LobbyService(ILogger<LobbyService> logger, LobbyStore lobbyStore, L
         
         using (await KeyedSemaphore.LockAsync(context.OwnerClaim.LobbyId))
         {
-            await SaveTypoStateSettings(context, state.LobbySettings with { LobbyOwnershipClaim = null });
+            await SetTypoStateSettings(context, state.LobbySettings with { LobbyOwnershipClaim = null });
         }
 
         return true;
@@ -68,7 +68,7 @@ public class LobbyService(ILogger<LobbyService> logger, LobbyStore lobbyStore, L
                 PlayerIsOwner = true,
                 LobbySettings = state.LobbySettings with { LobbyOwnershipClaim = context.OwnerClaim.Timestamp.ToUnixTimeMilliseconds() }
             };
-            await SaveTypoStateSettings(context, state.LobbySettings);
+            await SetTypoStateSettings(context, state.LobbySettings);
             logger.LogDebug("Updated ownership claim of lobby");
             return new LobbyOwnerClaimResult(true, state);
         }

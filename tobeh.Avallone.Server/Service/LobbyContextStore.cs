@@ -9,8 +9,10 @@ namespace tobeh.Avallone.Server.Service;
 public class LobbyContextStore(ILogger<LobbyContextStore> logger)
 {
     private readonly ConcurrentDictionary<string, LobbyContext> _connections = new();
+    private readonly ConcurrentDictionary<string, LobbyContext> _detachedPending = new();
+    private readonly SemaphoreSlim _detachedPendingLock = new(1);
 
-    public async Task<LobbyContext> AttachContextToClient(string id, string lobbyId, int playerId, int playerLogin, List<long> serverConnections, string? ownerClaim = null)
+    public LobbyContext AttachContextToClient(string id, string lobbyId, int playerId, int playerLogin, List<long> serverConnections, string? ownerClaim = null)
     {
         logger.LogTrace("AttachContextToClient(id={id}, lobbyId={lobbyId}, ownerClaim={ownerClaim})", id, lobbyId, ownerClaim);
         
@@ -24,11 +26,17 @@ public class LobbyContextStore(ILogger<LobbyContextStore> logger)
         return context;
     }
 
-    public void DetachContextFromClient(string id)
+    public async Task DetachContextFromClient(string id)
     {
         logger.LogTrace("DetachContextFromClient(id={id})", id);
         
         _connections.Remove(id, out var value);
+        if (value is not null)
+        {
+            await _detachedPendingLock.WaitAsync();
+            _detachedPending.AddOrUpdate(id, value, (key, oldValue) => value);
+            _detachedPendingLock.Release();
+        }
     }
 
     public LobbyContext RetrieveContextFromClient(string id)
@@ -48,6 +56,18 @@ public class LobbyContextStore(ILogger<LobbyContextStore> logger)
         logger.LogTrace("RetrieveExistingLobbyContexts()");
         
         return _connections.Values.ToList();
+    }
+    
+    public async Task<Dictionary<string, LobbyContext>> FlushDetachedPending()
+    {
+        logger.LogTrace("FlushDetachedPending()");
+
+        await _detachedPendingLock.WaitAsync();
+        var entries = _detachedPending.ToDictionary();
+        _detachedPending.Clear();
+        _detachedPendingLock.Release();
+
+        return entries;
     }
     
 }
