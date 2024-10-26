@@ -16,6 +16,17 @@ public class LobbyStore(ILogger<LobbyStore> logger)
         _skribblStates.AddOrUpdate(lobbyId, new TimestampedRecord<SkribblLobbyStateDto>(DateTimeOffset.UtcNow,  state), (key, oldValue) => new TimestampedRecord<SkribblLobbyStateDto>(DateTimeOffset.UtcNow, state));
     }
     
+    public void TouchStateTimestamp(string lobbyId)
+    {
+        logger.LogTrace("TouchStateTimestamp(lobbyId={lobbyId})", lobbyId);
+        
+        _skribblStates.TryGetValue(lobbyId, out var record);
+        if (record != null)
+        {
+            _skribblStates.TryUpdate(lobbyId, new TimestampedRecord<SkribblLobbyStateDto>(DateTimeOffset.UtcNow, record.Record), record);
+        }
+    }
+    
     public TimestampedRecord<SkribblLobbyStateDto>? GetSkribblState(string lobbyId)
     {
         logger.LogTrace("GetSkribblState(lobbyId={lobbyId})", lobbyId);

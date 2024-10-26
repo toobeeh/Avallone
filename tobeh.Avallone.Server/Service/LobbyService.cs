@@ -1,15 +1,15 @@
-using Google.Protobuf.WellKnownTypes;
 using KeyedSemaphores;
 using tobeh.Avallone.Server.Classes;
 using tobeh.Avallone.Server.Classes.Dto;
 using tobeh.Avallone.Server.Classes.Exceptions;
+using tobeh.Avallone.Server.Util;
 using tobeh.Valmar;
 
 namespace tobeh.Avallone.Server.Service;
 
 public class LobbyService(ILogger<LobbyService> logger, LobbyStore lobbyStore, Lobbies.LobbiesClient lobbiesClient)
 {
-    public async Task<TypoLobbyStateDto> GetTypoStateSettings(LobbyContext context)
+    private async Task<TypoLobbyStateDto> GetTypoStateSettings(LobbyContext context)
     {
         logger.LogTrace("GetTypoStateSettings(context={context})", context);
         
@@ -19,7 +19,7 @@ public class LobbyService(ILogger<LobbyService> logger, LobbyStore lobbyStore, L
         var ownerClaim = lobby.LobbyOwnershipClaim;
         var isOwner = context.OwnerClaim.Timestamp.ToUnixTimeMilliseconds() == ownerClaim;
         
-        return new TypoLobbyStateDto(isOwner, 
+        return new TypoLobbyStateDto(isOwner, context.OwnerClaim.Token, context.OwnerClaim.LobbyId, context.OwnerClaim.Timestamp.ToUnixTimeMilliseconds(),
             new TypoLobbySettingsDto(lobby.Description, lobby.WhitelistAllowedServers, 
                 lobby.AllowedServers.Select(s => s.ToString()).ToList(), ownerClaim));
     }
@@ -69,6 +69,7 @@ public class LobbyService(ILogger<LobbyService> logger, LobbyStore lobbyStore, L
                 LobbySettings = state.LobbySettings with { LobbyOwnershipClaim = context.OwnerClaim.Timestamp.ToUnixTimeMilliseconds() }
             };
             await SaveTypoStateSettings(context, state.LobbySettings);
+            logger.LogDebug("Updated ownership claim of lobby");
             return new LobbyOwnerClaimResult(true, state);
         }
     }
@@ -78,9 +79,16 @@ public class LobbyService(ILogger<LobbyService> logger, LobbyStore lobbyStore, L
         logger.LogTrace("SaveSkribblLobbyState(context={context}, state={state})", context, state);
         
         var currentState = lobbyStore.GetSkribblState(context.OwnerClaim.LobbyId);
+        
         if(currentState is null || currentState.Record.GetHashCode() != state.GetHashCode())
         {
             lobbyStore.SetSkribblState(context.OwnerClaim.LobbyId, state);
+            logger.LogDebug("Skribbl lobby state updated");
+        }
+        else
+        {
+            lobbyStore.TouchStateTimestamp(context.OwnerClaim.LobbyId);
+            logger.LogDebug("Skribbl lobby state unchanged");
         }
     }
     
@@ -93,7 +101,7 @@ public class LobbyService(ILogger<LobbyService> logger, LobbyStore lobbyStore, L
         {
             throw new EntityNotFoundException("No state found for lobby");
         }
-        if(state.Timestamp.AddSeconds(5) > DateTimeOffset.UtcNow)
+        if(state.Timestamp.AddSeconds(60) < DateTimeOffset.UtcNow)
         {
             throw new EntityExpiredException("Existing state has expired");
         }
@@ -106,5 +114,6 @@ public class LobbyService(ILogger<LobbyService> logger, LobbyStore lobbyStore, L
         logger.LogTrace("RemoveSkribblLobbyState(context={context})", context);
         
         lobbyStore.RemoveSkribblState(context.OwnerClaim.LobbyId);
+        logger.LogDebug("Skribbl lobby state removed");
     }
 }

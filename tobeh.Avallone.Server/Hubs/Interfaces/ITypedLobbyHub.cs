@@ -9,11 +9,12 @@ public interface ILobbyHub
 {
     Task<TypoLobbyStateDto> LobbyDiscovered(LobbyDiscoveredDto lobbyDiscovery);
     Task ClaimLobbyOwnership();
+    Task UpdateSkribblLobbyState(SkribblLobbyStateDto state);
 }
 
 [Receiver]
 public interface ILobbyReceiver
 {
-    Task TypoLobbyStateUpdated(TypoLobbyStateDto state);
+    Task TypoLobbySettingsUpdated(TypoLobbySettingsDto settings);
     Task LobbyOwnershipResigned();
 }

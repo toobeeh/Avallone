@@ -55,7 +55,7 @@ public class LobbyHub(
         if (claimResult.ClaimSuccessful)
         {
             logger.LogDebug("Connection claim successful, notifying group");
-            await Clients.Group(context.OwnerClaim.LobbyId).TypoLobbyStateUpdated(claimResult.State);
+            await Clients.Group(context.OwnerClaim.LobbyId).TypoLobbySettingsUpdated(claimResult.State.LobbySettings);
         }
         
         // save reported current skribbl state
@@ -67,6 +67,7 @@ public class LobbyHub(
         return claimResult.State;
     }
 
+    [Authorize]
     public async Task ClaimLobbyOwnership()
     {
         logger.LogTrace("ClaimLobbyOwnership()");
@@ -79,7 +80,17 @@ public class LobbyHub(
         if (claimResult.ClaimSuccessful)
         {
             logger.LogDebug("Claim successful, notifying group");
-            await Clients.Group(context.OwnerClaim.LobbyId).TypoLobbyStateUpdated(claimResult.State);
+            await Clients.Group(context.OwnerClaim.LobbyId).TypoLobbySettingsUpdated(claimResult.State.LobbySettings);
         }
+    }
+    
+    [Authorize]
+    public Task UpdateSkribblLobbyState(SkribblLobbyStateDto state)
+    {
+        logger.LogTrace("UpdateSkribblLobbyState(state={state})", state);
+        
+        var context = lobbyContextStore.RetrieveContextFromClient(Context.ConnectionId);
+        lobbyService.SaveSkribblLobbyState(context, state);
+        return Task.CompletedTask;
     }
 }

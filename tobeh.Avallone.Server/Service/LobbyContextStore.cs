@@ -8,13 +8,16 @@ namespace tobeh.Avallone.Server.Service;
 
 public class LobbyContextStore(ILogger<LobbyContextStore> logger)
 {
-    private ConcurrentDictionary<string, LobbyContext> _connections = new();
+    private readonly ConcurrentDictionary<string, LobbyContext> _connections = new();
 
     public async Task<LobbyContext> AttachContextToClient(string id, string lobbyId, int playerId, int playerLogin, List<long> serverConnections, string? ownerClaim = null)
     {
         logger.LogTrace("AttachContextToClient(id={id}, lobbyId={lobbyId}, ownerClaim={ownerClaim})", id, lobbyId, ownerClaim);
         
-        var claim = ownerClaim is {}  signed ? RsaHelper.DecryptOwnerClaim(signed) : new LobbyOwnerClaim(DateTimeOffset.Now, lobbyId);
+        var claim = ownerClaim != null ? 
+            RsaHelper.DecryptOwnerClaim(ownerClaim) : 
+            RsaHelper.CreateOwnerClaim(lobbyId, DateTimeOffset.Now);
+        
         var context = new LobbyContext(claim, playerId, playerLogin, serverConnections);
         _connections.AddOrUpdate(id, context, (key, oldValue) => context);
 
