@@ -56,7 +56,7 @@ public class SkribblLobbyUpdaterJob(
             .ToList();
         
         // crate player update messages
-        var playerMessages = lobbies.Select(lobby => new SetMemberStatusesMessage
+        var playerMessages = lobbies.Select(lobby => new SkribblLobbyTypoMembersMessage
         {
             LobbyId = lobby.SkribblLobby.Link,
             Members = { lobby.Players.Select(member => new SkribblLobbyTypoMemberMessage()
@@ -72,7 +72,7 @@ public class SkribblLobbyUpdaterJob(
         var detachedPlayerMessages = detachedPending
             .Select(item => item.Value)
             .GroupBy(item => item.OwnerClaim.LobbyId)
-            .Select(lobby => new SetMemberStatusesMessage
+            .Select(lobby => new SkribblLobbyTypoMembersMessage
         {
             LobbyId = lobby.Key,
             Members =

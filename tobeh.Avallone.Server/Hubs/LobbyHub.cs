@@ -29,7 +29,7 @@ public class LobbyHub(
         await Groups.RemoveFromGroupAsync(context.OwnerClaim.LobbyId, id);
         
         // if client was owner, request new ownership claims from other clients
-        var ownershipRemoved = await lobbyService.RemoveOwnershipFromLobby(context);
+        var ownershipRemoved = await lobbyService.TryRemoveOwnershipFromLobby(context);
         if (ownershipRemoved)
         {
             logger.LogDebug("Owner disconnected, requesting new ownership claims");
@@ -99,5 +99,15 @@ public class LobbyHub(
         var context = lobbyContextStore.RetrieveContextFromClient(Context.ConnectionId);
         lobbyService.SaveSkribblLobbyState(context, state);
         return Task.CompletedTask;
+    }
+
+    [Authorize]
+    public async Task UpdateTypoLobbySettings(SkribblLobbyTypoSettingsUpdateDto typoSettings)
+    {
+        logger.LogTrace("UpdateTypoLobbySettings(typoSettings={typoSettings})", typoSettings);
+        
+        var context = lobbyContextStore.RetrieveContextFromClient(Context.ConnectionId);
+        await lobbyService.UpdateTypoLobbySettings(context, typoSettings);
+        logger.LogDebug("Updated lobby settings: {settings}", typoSettings);
     }
 }

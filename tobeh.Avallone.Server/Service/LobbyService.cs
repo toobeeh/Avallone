@@ -38,9 +38,9 @@ public class LobbyService(ILogger<LobbyService> logger, LobbyStore lobbyStore, L
         });
     }
 
-    public async Task<bool> RemoveOwnershipFromLobby(LobbyContext context)
+    public async Task<bool> TryRemoveOwnershipFromLobby(LobbyContext context)
     {
-        logger.LogTrace("RemoveOwnershipFromLobby(context={context})", context);
+        logger.LogTrace("TryRemoveOwnershipFromLobby(context={context})", context);
 
         var state = await GetTypoStateSettings(context);
         if (!state.PlayerIsOwner) return false;
@@ -68,9 +68,30 @@ public class LobbyService(ILogger<LobbyService> logger, LobbyStore lobbyStore, L
                 PlayerIsOwner = true,
                 LobbySettings = state.LobbySettings with { LobbyOwnershipClaim = context.OwnerClaim.Timestamp.ToUnixTimeMilliseconds() }
             };
+            
             await SetTypoStateSettings(context, state.LobbySettings);
             logger.LogDebug("Updated ownership claim of lobby");
             return new LobbyOwnerClaimResult(true, state);
+        }
+    }
+    
+    public async Task UpdateTypoLobbySettings(LobbyContext context, SkribblLobbyTypoSettingsUpdateDto settings)
+    {
+        logger.LogTrace("UpdateTypoLobbySettings(context={context}, settings={settings})", context, settings);
+        
+        var state = await GetTypoStateSettings(context);
+        if (!state.PlayerIsOwner) throw new UnauthorizedAccessException("Player is not owner of lobby");
+        
+        var newSettings = state.LobbySettings with
+        {
+            Description = settings.Description, 
+            WhitelistAllowedServers = settings.WhitelistAllowedServers, 
+            AllowedServers = settings.AllowedServers
+        };
+        
+        using (await KeyedSemaphore.LockAsync(context.OwnerClaim.LobbyId))
+        {
+            await SetTypoStateSettings(context, newSettings);
         }
     }
     

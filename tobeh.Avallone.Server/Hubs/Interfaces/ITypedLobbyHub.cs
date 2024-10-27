@@ -10,6 +10,7 @@ public interface ILobbyHub
     Task<TypoLobbyStateDto> LobbyDiscovered(LobbyDiscoveredDto lobbyDiscovery);
     Task ClaimLobbyOwnership();
     Task UpdateSkribblLobbyState(SkribblLobbyStateDto state);
+    Task UpdateTypoLobbySettings(SkribblLobbyTypoSettingsUpdateDto typoSettings);
 }
 
 [Receiver]
