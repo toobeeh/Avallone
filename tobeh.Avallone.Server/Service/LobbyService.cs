@@ -62,11 +62,17 @@ public class LobbyService(ILogger<LobbyService> logger, LobbyStore lobbyStore, L
             var state = await GetTypoStateSettings(context);
             if (state.LobbySettings.LobbyOwnershipClaim is not null &&
                 state.LobbySettings.LobbyOwnershipClaim < context.OwnerClaim.Timestamp.ToUnixTimeMilliseconds()) return new LobbyOwnerClaimResult(false, state);
-        
+            
             state = state with
             {
                 PlayerIsOwner = true,
-                LobbySettings = state.LobbySettings with { LobbyOwnershipClaim = context.OwnerClaim.Timestamp.ToUnixTimeMilliseconds() }
+                LobbySettings = state.LobbySettings with
+                {
+                    LobbyOwnershipClaim = context.OwnerClaim.Timestamp.ToUnixTimeMilliseconds(),
+                    AllowedServers = state.LobbySettings.AllowedServers // if ownership changes, allow only servers where new owner is connected to prevent undefined behavior
+                        .Where(allowed => context.ServerConnections.Contains(long.Parse(allowed)))
+                        .ToList()
+                }
             };
             
             await SetTypoStateSettings(context, state.LobbySettings);
@@ -75,7 +81,7 @@ public class LobbyService(ILogger<LobbyService> logger, LobbyStore lobbyStore, L
         }
     }
     
-    public async Task UpdateTypoLobbySettings(LobbyContext context, SkribblLobbyTypoSettingsUpdateDto settings)
+    public async Task<TypoLobbySettingsDto> UpdateTypoLobbySettings(LobbyContext context, SkribblLobbyTypoSettingsUpdateDto settings)
     {
         logger.LogTrace("UpdateTypoLobbySettings(context={context}, settings={settings})", context, settings);
         
@@ -93,6 +99,8 @@ public class LobbyService(ILogger<LobbyService> logger, LobbyStore lobbyStore, L
         {
             await SetTypoStateSettings(context, newSettings);
         }
+
+        return newSettings;
     }
     
     public void SaveSkribblLobbyState(LobbyContext context, SkribblLobbyStateDto state)

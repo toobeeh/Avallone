@@ -107,7 +107,8 @@ public class LobbyHub(
         logger.LogTrace("UpdateTypoLobbySettings(typoSettings={typoSettings})", typoSettings);
         
         var context = lobbyContextStore.RetrieveContextFromClient(Context.ConnectionId);
-        await lobbyService.UpdateTypoLobbySettings(context, typoSettings);
-        logger.LogDebug("Updated lobby settings: {settings}", typoSettings);
+        var settings = await lobbyService.UpdateTypoLobbySettings(context, typoSettings);
+        await Clients.Group(context.OwnerClaim.LobbyId).TypoLobbySettingsUpdated(settings);
+        logger.LogDebug("Updated lobby settings: {settings}", settings);
     }
 }
