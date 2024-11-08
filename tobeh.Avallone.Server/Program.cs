@@ -4,6 +4,7 @@ using Quartz;
 using tobeh.Avallone.Server.Authentication;
 using tobeh.Avallone.Server.Hubs;
 using tobeh.Avallone.Server.Quartz.GuildLobbyUpdater;
+using tobeh.Avallone.Server.Quartz.OnlineItemsUpdater;
 using tobeh.Avallone.Server.Quartz.SkribblLobbyUpdater;
 using tobeh.Avallone.Server.Service;
 using tobeh.Valmar.Client.Util;
@@ -33,12 +34,14 @@ class Program
 
         builder.Services
             .AddValmarGrpc(builder.Configuration.GetValue<string>("Grpc:ValmarAddress"))
-            /*.AddQuartz(GuildLobbiesUpdaterConfiguration.Configure)*/
+            .AddQuartz(GuildLobbiesUpdaterConfiguration.Configure)
             .AddQuartz(SkribblLobbyUpdaterConfiguration.Configure)
+            .AddQuartz(OnlineItemsUpdaterConfiguration.Configure)
             .AddQuartzHostedService(options => { options.WaitForJobsToComplete = true; })
             .AddSingleton<GuildLobbiesStore>()
             .AddSingleton<LobbyContextStore>()
             .AddSingleton<LobbyStore>()
+            .AddSingleton<OnlineItemsStore>()
             .AddScoped<LobbyService>()
             .AddCors()
             .AddAuthentication(options =>
@@ -65,6 +68,7 @@ class Program
     {
         app.MapHub<GuildLobbiesHub>("/guildLobbies");
         app.MapHub<LobbyHub>("/lobby");
+        app.MapHub<OnlineItemsHub>("/onlineItems");
         app.UseAuthentication();
         app.UseAuthorization();
 

@@ -17,6 +17,11 @@ When subscribed to a guild, the client will receive updates for the currently on
 To subscribe, the client needs to authorize and have connected to that guild.  
 On subscription, the client immediately receives the current lobbies.
 
+### Online Items Hub
+A simple interface which broadcasts the current online items to all clients.  
+Freshly connected clients receive all current online items.  
+Updates are only sent when a new item is added or removed.
+
 ### Drops Hub
 Todo specify
 
