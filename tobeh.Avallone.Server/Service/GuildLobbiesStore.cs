@@ -8,10 +8,13 @@ public class GuildLobbiesStore(
 )
 {
     private readonly ConcurrentDictionary<string, List<GuildLobbyDto>> _guildLobbies = new();
+    private readonly ConcurrentDictionary<string, bool> _resetBlacklist = new();
 
     public bool SetLobbiesForGuild(string guildId, List<GuildLobbyDto> lobbies)
     {
         logger.LogTrace("SetLobbiesForGuild(guildId={guildId}, lobbies={lobbies})", guildId, lobbies);
+        
+        _resetBlacklist.AddOrUpdate(guildId, true, (key, oldValue) => true);
 
         var containsChanges = false;
         _guildLobbies.AddOrUpdate(guildId, lobbies, (key, oldValue) =>
@@ -31,9 +34,20 @@ public class GuildLobbiesStore(
         return lobbies ?? [];
     }
     
-    public void Reset()
+    public void BeginReset()
     {
-        logger.LogTrace("Reset()");
-        _guildLobbies.Clear();
+        logger.LogTrace("BeginReset()");
+        _resetBlacklist.Clear();
+    }
+
+    public void ResetUnchanged()
+    {
+        logger.LogTrace("ResetUnchanged()");
+        
+        var unchanged = _guildLobbies.Keys.Except(_resetBlacklist.Keys);
+        foreach (var guildId in unchanged)
+        {
+            _guildLobbies.TryRemove(guildId, out _);
+        }
     }
 }

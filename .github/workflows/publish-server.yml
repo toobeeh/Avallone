@@ -1,0 +1,36 @@
+name: Build and Publish Server to GitHub Container Registry
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - '.github/workflows/publish-server.yml'
+      - 'tobeh.Avallone.Server/**'
+
+env:
+  IMAGE_NAME: avallone-server
+  DOCKERFILE_PATH: ./tobeh.Avallone.Server/.docker/Dockerfile
+
+jobs:
+  build-and-publish:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v1
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v2
+        with:
+          context: ./tobeh.Avallone.Server
+          file: ${{ env.DOCKERFILE_PATH }}
+          push: true
+          tags: ghcr.io/toobeeh/${{ env.IMAGE_NAME }}:latest

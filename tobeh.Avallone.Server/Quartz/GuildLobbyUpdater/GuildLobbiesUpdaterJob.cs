@@ -29,11 +29,11 @@ public class GuildLobbiesUpdaterJob(
                 {
                     Id = group.Key.ToString(),
                     Lobbies = group.Select(lobby => new GuildLobbyDto(lobby.Username, 1, "", lobby.Link, false))
-                        .ToList()
+                        .ToList() // TODO refactor valmar to get actual details for lobby
                 });
 
         /* save updates to store and push to clients */
-        guildLobbiesStore.Reset();
+        guildLobbiesStore.BeginReset();
         var updates = guildLobbies.Select(async guild =>
         {
             var changes = guildLobbiesStore.SetLobbiesForGuild(guild.Id, guild.Lobbies);
@@ -41,9 +41,11 @@ public class GuildLobbiesUpdaterJob(
             {
                 await guildLobbiesHubContext.Clients.Group(guild.Id)
                     .GuildLobbiesUpdated(new GuildLobbiesUpdatedDto(guild.Id, guild.Lobbies));
+        
+                logger.LogDebug("Updated guild lobbies of {id}", guild.Id);
             }
         }).ToList();
         await Task.WhenAll(updates);
-        logger.LogDebug("Updated {guilds} guild lobbies", updates.Count);
+        guildLobbiesStore.ResetUnchanged();
     }
 }

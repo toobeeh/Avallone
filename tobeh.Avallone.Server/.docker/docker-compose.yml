@@ -1,0 +1,11 @@
+services:
+  typo-emoji-service:
+    container_name: avallone
+    build:
+      context: ../
+      dockerfile: .docker/Dockerfile
+    restart: unless-stopped
+    volumes:
+      - path-to-appsettings.json:/app/appsettings.json
+    ports:
+      - "5124:8080"

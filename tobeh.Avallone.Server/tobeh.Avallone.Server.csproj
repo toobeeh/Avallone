@@ -32,4 +32,9 @@
       <PackageReference Include="TypedSignalR.Client.TypeScript.Attributes" Version="1.14.0" />
     </ItemGroup>
 
+    <ItemGroup>
+      <Content Include=".docker\docker-compose.yml" />
+      <Content Include=".docker\Dockerfile" />
+    </ItemGroup>
+
 </Project>
