@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authentication;
 using Quartz;
 using tobeh.Avallone.Server.Authentication;
 using tobeh.Avallone.Server.Hubs;
+using tobeh.Avallone.Server.Quartz.DropAnnouncer;
 using tobeh.Avallone.Server.Quartz.GuildLobbyUpdater;
 using tobeh.Avallone.Server.Quartz.OnlineItemsUpdater;
 using tobeh.Avallone.Server.Quartz.SkribblLobbyUpdater;
@@ -37,6 +38,7 @@ class Program
             .AddQuartz(GuildLobbiesUpdaterConfiguration.Configure)
             .AddQuartz(SkribblLobbyUpdaterConfiguration.Configure)
             .AddQuartz(OnlineItemsUpdaterConfiguration.Configure)
+            .AddQuartz(DropAnnouncerConfiguration.Configure)
             .AddQuartzHostedService(options => { options.WaitForJobsToComplete = true; })
             .AddSingleton<GuildLobbiesStore>()
             .AddSingleton<LobbyContextStore>()

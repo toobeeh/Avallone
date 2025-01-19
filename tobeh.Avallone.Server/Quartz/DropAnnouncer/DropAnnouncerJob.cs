@@ -27,12 +27,12 @@ public class DropAnnouncerJob(
             logger.LogError(e, "Failed to announce drop");
         }
         
-        /* schedule next scheduled drop check in 1s */
+        /* schedule next drop check in 1s - min delay is 2s, so shannon is satisfied ;) */
         var newTrigger = TriggerBuilder.Create()
             .StartAt(DateTimeOffset.Now.AddSeconds(1))
             .Build();
 
-        logger.LogInformation("Rescheduling job for {newTrigger}", newTrigger.GetNextFireTimeUtc());
+        logger.LogDebug("Next check in 1s");
         await context.Scheduler.RescheduleJob(context.Trigger.Key, newTrigger);
     }
 
@@ -44,7 +44,7 @@ public class DropAnnouncerJob(
         var dropTime = drop.Timestamp.ToDateTimeOffset();
         
         /* if drop is announced, wait until drop and announce */
-        if(dropTime > DateTimeOffset.Now)
+        if(dropTime > DateTimeOffset.UtcNow)
         {
             logger.LogInformation("Drop {dropId} is scheduled for {dropTime}", drop.Id, dropTime);
             
