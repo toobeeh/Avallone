@@ -13,6 +13,7 @@ public class TypoTokenDefaults
 {
     public const string AuthenticationScheme = "TypoToken";
     public const string GuildClaimName = "connected_guild_id";
+    public const string DiscordIdClaimName = "typo_linked_discord_id";
 }
 
 public class TypoTokenHandler(
@@ -62,6 +63,7 @@ public class TypoTokenHandler(
             
             claims.Add(new Claim(ClaimTypes.NameIdentifier, member.Login.ToString()));
             claims.Add(new Claim(ClaimTypes.Name, member.Username));
+            claims.Add(new Claim(TypoTokenDefaults.DiscordIdClaimName, member.DiscordId.ToString()));
             claims.AddRange(TypoTokenHandlerHelper.CreateServerConnectionClaims(member.ServerConnections));
             
             return claims;

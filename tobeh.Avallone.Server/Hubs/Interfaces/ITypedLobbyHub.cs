@@ -11,6 +11,8 @@ public interface ILobbyHub
     Task ClaimLobbyOwnership();
     Task UpdateSkribblLobbyState(SkribblLobbyStateDto state);
     Task UpdateTypoLobbySettings(SkribblLobbyTypoSettingsUpdateDto typoSettings);
+    Task<DropClaimResultDto> ClaimDrop(DropClaimDto dropClaim);
+    Task GiftAward(AwardGiftDto awardGift);
 }
 
 [Receiver]
@@ -18,4 +20,7 @@ public interface ILobbyReceiver
 {
     Task TypoLobbySettingsUpdated(TypoLobbySettingsDto settings);
     Task LobbyOwnershipResigned();
+    Task DropAnnounced(DropAnnouncementDto drop);
+    Task AwardGifted(AwardGiftedDto award);
+    Task DropClaimed(DropClaimResultDto claimResult);
 }

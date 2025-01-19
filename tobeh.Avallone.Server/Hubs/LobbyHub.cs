@@ -10,10 +10,12 @@ using tobeh.Valmar;
 
 namespace tobeh.Avallone.Server.Hubs;
 
-public class LobbyHub(
+public partial class LobbyHub(
     ILogger<LobbyHub> logger,
     LobbyContextStore lobbyContextStore,
-    LobbyService lobbyService
+    LobbyService lobbyService,
+    Inventory.InventoryClient inventoryClient,
+    Drops.DropsClient dropsClient
     ) : Hub<ILobbyReceiver>, ILobbyHub
 {
     public override async Task OnDisconnectedAsync(Exception? exception)

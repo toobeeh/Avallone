@@ -20,6 +20,11 @@ public class TypoTokenHandlerHelper
             .ToList();
     }
     
+    public static long ExtractDiscordIdClaim(IEnumerable<Claim> claims)
+    {
+        return long.Parse(claims.FirstOrDefault(claim => claim.Type == TypoTokenDefaults.DiscordIdClaimName)?.Value ?? throw new NullReferenceException("No discord id claim present"));
+    }
+    
     public static int ExtractLoginClaim(IEnumerable<Claim> claims)
     {
         return int.Parse(claims.FirstOrDefault(claim => claim.Type == ClaimTypes.NameIdentifier)?.Value ?? throw new NullReferenceException("No id claim present"));
