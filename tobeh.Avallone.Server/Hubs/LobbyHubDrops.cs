@@ -29,10 +29,17 @@ public partial class LobbyHub
             throw new EntityNotFoundException("Could not find player in lobby");
         }
         
+        /* get league mode*/
+        var leagueMode = lobby.Players.Count == 1 || lobby.Players.TrueForAll(p => p.Score == 0);
+        
         /* claim drop in valmar */
-        var claimResult = await dropsClient.ClaimDropAsync(new ClaimDropMessage { DropId = dropClaim.DropId });
+        var claimResult = await dropsClient.ClaimDropAsync(new ClaimDropMessage
+        {
+            DropId = dropClaim.DropId, 
+            LeagueMode = leagueMode
+        });
         var resultNotification = new DropClaimResultDto(username, claimResult.FirstClaim, claimResult.ClearedDrop,
-            claimResult.CatchMs, claimResult.LeagueWeight, dropClaim.DropId, false);
+            claimResult.CatchMs, claimResult.LeagueWeight, dropClaim.DropId, leagueMode);
         
         /* log drop */
         dropsClient.LogDropClaimAsync(new LogDropMessage
@@ -45,14 +52,9 @@ public partial class LobbyHub
             LobbyKey = lobbyContext.OwnerClaim.LobbyId,
         });
         
-        /* check if drop was caught in league grind mode */
-        if (lobby.Players.Count == 1 || lobby.Players.TrueForAll(p => p.Score == 0))
+        /* reward drop only if not in league mode */
+        if(!leagueMode)
         {
-            resultNotification = resultNotification with { leagueMode = true };
-        }
-        else
-        {
-            /* reward drop */
             dropsClient.RewardDropAsync(new RewardDropMessage
             {
                 EventDropId = claimResult.EventDropId,
