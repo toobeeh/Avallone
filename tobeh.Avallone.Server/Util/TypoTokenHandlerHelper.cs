@@ -29,4 +29,9 @@ public class TypoTokenHandlerHelper
     {
         return int.Parse(claims.FirstOrDefault(claim => claim.Type == ClaimTypes.NameIdentifier)?.Value ?? throw new NullReferenceException("No id claim present"));
     }
+    
+    public static bool HasDropBanClaim(IEnumerable<Claim> claims)
+    {
+        return claims.Any(claim => claim.Type == TypoTokenDefaults.DropBan);
+    }
 }

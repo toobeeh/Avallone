@@ -14,6 +14,11 @@ public partial class LobbyHub
         logger.LogTrace("ClaimDrop(dropClaim={dropClaim})", dropClaim);
         
         var discordId = TypoTokenHandlerHelper.ExtractDiscordIdClaim(Context.User?.Claims ?? []);
+        var dropBan = TypoTokenHandlerHelper.HasDropBanClaim(Context.User?.Claims ?? []);
+        if (dropBan)
+        {
+            throw new ForbiddenException("User id drop banned");
+        }
         
         /* get username */
         var lobbyContext = lobbyContextStore.RetrieveContextFromClient(Context.ConnectionId);

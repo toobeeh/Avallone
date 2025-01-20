@@ -14,6 +14,7 @@ public class TypoTokenDefaults
     public const string AuthenticationScheme = "TypoToken";
     public const string GuildClaimName = "connected_guild_id";
     public const string DiscordIdClaimName = "typo_linked_discord_id";
+    public const string DropBan = "typo_drops_ban";
 }
 
 public class TypoTokenHandler(
@@ -61,10 +62,14 @@ public class TypoTokenHandler(
         {
             var member = await membersClient.GetMemberByAccessTokenAsync(new IdentifyMemberByAccessTokenRequest { AccessToken = token });
             
+            /* dont validate banned members */
+            if (member.MappedFlags.Contains(MemberFlagMessage.PermaBan)) return null;
+            
             claims.Add(new Claim(ClaimTypes.NameIdentifier, member.Login.ToString()));
             claims.Add(new Claim(ClaimTypes.Name, member.Username));
             claims.Add(new Claim(TypoTokenDefaults.DiscordIdClaimName, member.DiscordId.ToString()));
             claims.AddRange(TypoTokenHandlerHelper.CreateServerConnectionClaims(member.ServerConnections));
+            if(member.MappedFlags.Contains(MemberFlagMessage.DropBan)) claims.Add(new Claim(TypoTokenDefaults.DropBan, "true"));
             
             return claims;
         }
