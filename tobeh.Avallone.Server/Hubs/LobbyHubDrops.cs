@@ -27,7 +27,7 @@ public partial class LobbyHub
         /* claim drop in valmar */
         var claimResult = await dropsClient.ClaimDropAsync(new ClaimDropMessage { DropId = dropClaim.DropId });
         var resultNotification = new DropClaimResultDto(username, claimResult.FirstClaim, claimResult.ClearedDrop,
-            claimResult.CatchMs, claimResult.LeagueWeight);
+            claimResult.CatchMs, claimResult.LeagueWeight, dropClaim.DropId);
         
         /* log drop */
         dropsClient.LogDropClaimAsync(new LogDropMessage
