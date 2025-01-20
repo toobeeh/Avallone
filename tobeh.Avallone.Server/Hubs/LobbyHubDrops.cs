@@ -27,7 +27,7 @@ public partial class LobbyHub
         /* claim drop in valmar */
         var claimResult = await dropsClient.ClaimDropAsync(new ClaimDropMessage { DropId = dropClaim.DropId });
         var resultNotification = new DropClaimResultDto(username, claimResult.FirstClaim, claimResult.ClearedDrop,
-            claimResult.CatchMs, claimResult.LeagueWeight, dropClaim.DropId);
+            claimResult.CatchMs, claimResult.LeagueWeight, dropClaim.DropId, false);
         
         /* log drop */
         dropsClient.LogDropClaimAsync(new LogDropMessage
@@ -39,14 +39,22 @@ public partial class LobbyHub
             EventDropId = claimResult.EventDropId,
             LobbyKey = lobbyContext.OwnerClaim.LobbyId,
         });
-
-        /* reward drop */
-        dropsClient.RewardDropAsync(new RewardDropMessage
+        
+        /* check if drop was caught in league grind mode */
+        if (lobby.Players.Count == 1 || lobby.Players.TrueForAll(p => p.Score == 0))
         {
-            EventDropId = claimResult.EventDropId,
-            Login = lobbyContext.PlayerLogin,
-            Value = claimResult.LeagueWeight
-        });
+            resultNotification = resultNotification with { leagueMode = true };
+        }
+        else
+        {
+            /* reward drop */
+            dropsClient.RewardDropAsync(new RewardDropMessage
+            {
+                EventDropId = claimResult.EventDropId,
+                Login = lobbyContext.PlayerLogin,
+                Value = claimResult.LeagueWeight
+            });
+        }
 
         /* notify others, and return result for own */
         await Clients.AllExcept([Context.ConnectionId]).DropClaimed(resultNotification);
