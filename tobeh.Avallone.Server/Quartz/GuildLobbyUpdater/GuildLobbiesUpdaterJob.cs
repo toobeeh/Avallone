@@ -13,6 +13,7 @@ namespace tobeh.Avallone.Server.Quartz.GuildLobbyUpdater;
 public class GuildLobbiesUpdaterJob(
     ILogger<GuildLobbiesUpdaterJob> logger, 
     Lobbies.LobbiesClient lobbiesClient,
+    Members.MembersClient membersClient,
     GuildLobbiesStore guildLobbiesStore,
     IHubContext<GuildLobbiesHub, IGuildLobbiesReceiver> guildLobbiesHubContext
     ) : IJob
@@ -20,31 +21,68 @@ public class GuildLobbiesUpdaterJob(
     public async Task Execute(IJobExecutionContext context)
     {
         logger.LogTrace("Execute({context})", context);
+        
+        /* get all lobbies with online members */
+        var memberLobbies = await lobbiesClient
+            .GetOnlineLobbyPlayers(new GetOnlinePlayersRequest())
+            .ToListAsync();
+        
+        /* get all members that are online */
+        var memberLogins = memberLobbies.SelectMany(lobby => lobby.Members.Select(member => member.Login));
+        var members =await  membersClient
+            .GetMembersByLogin(new GetMembersByLoginMessage { Logins = { memberLogins } })
+            .ToDictionaryAsync(member => member.Login);
+        
+        /* get all skribbl lobby details */
+        var lobbyIds = memberLobbies.Select(lobby => lobby.LobbyId);
+        var lobbies = await lobbiesClient
+            .GetLobbiesById(new GetLobbiesByIdRequest { LobbyIds = { lobbyIds } })
+            .ToDictionaryAsync(lobby => lobby.SkribblState.LobbyId);
+        
+        /* for each lobby member, get the lobby details and their connected guilds and add to guild lobbies */
+        var guildLobbies = new Dictionary<long, List<GuildLobbyDto>>();
+        foreach (var lobby in memberLobbies) 
+        {
+            var lobbyDetails = lobbies[lobby.LobbyId];
+            foreach (var lobbyMember in lobby.Members)
+            {
+                var member = members[lobbyMember.Login];
+                var lobbyPlayer = lobbyDetails.SkribblState.Players
+                    .FirstOrDefault(p => p.PlayerId == lobbyMember.LobbyPlayerId);
+                if (lobbyPlayer is null) continue;
 
-        /* get all guild lobbies links */
-        var lobbies = await lobbiesClient.GetLobbyLinks(new Empty()).ToListAsync();
-        var guildLobbies =
-            lobbies.GroupBy(lobby => lobby.GuildId)
-                .Select(group => new
+                var guildLobby = new GuildLobbyDto(
+                    lobbyPlayer.Name,
+                    lobbyDetails.SkribblState.Players.Count,
+                    lobbyDetails.SkribblState.Settings.Language,
+                    lobbyDetails.SkribblState.LobbyId,
+                    lobbyDetails.SkribblState.OwnerId is not null
+                );
+                
+                foreach (var server in member.ServerConnections)
                 {
-                    Id = group.Key.ToString(),
-                    Lobbies = group.Select(lobby => new GuildLobbyDto(lobby.Username, 1, "", lobby.Link, false))
-                        .ToList() // TODO refactor valmar to get actual details for lobby
-                });
+
+                    if(guildLobbies.TryGetValue(server, out var value)) value.Add(guildLobby);
+                    else guildLobbies[server] = [guildLobby];
+                }
+            }
+        }
 
         /* save updates to store and push to clients */
         guildLobbiesStore.BeginReset();
         var updates = guildLobbies.Select(async guild =>
         {
-            var changes = guildLobbiesStore.SetLobbiesForGuild(guild.Id, guild.Lobbies);
+            var guildId = guild.Key.ToString();
+            var changes = guildLobbiesStore.SetLobbiesForGuild(guildId, guild.Value);
             if (changes)
             {
-                await guildLobbiesHubContext.Clients.Group(guild.Id)
-                    .GuildLobbiesUpdated(new GuildLobbiesUpdatedDto(guild.Id, guild.Lobbies));
-        
-                logger.LogDebug("Updated guild lobbies of {id}", guild.Id);
+                await guildLobbiesHubContext.Clients.Group(guildId)
+                    .GuildLobbiesUpdated(new GuildLobbiesUpdatedDto(guildId, guild.Value));
+
+                logger.LogDebug("Updated guild lobbies of {id}", guildId);
             }
         }).ToList();
+        
         await Task.WhenAll(updates);
         guildLobbiesStore.ResetUnchanged();
     }

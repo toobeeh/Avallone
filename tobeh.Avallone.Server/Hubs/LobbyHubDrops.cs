@@ -39,7 +39,7 @@ public partial class LobbyHub
             LeagueMode = leagueMode
         });
         var resultNotification = new DropClaimResultDto(username, claimResult.FirstClaim, claimResult.ClearedDrop,
-            claimResult.CatchMs, claimResult.LeagueWeight, dropClaim.DropId, leagueMode);
+            claimResult.CatchMs, claimResult.LeagueWeight, dropClaim.DropId, claimResult.LeagueMode);
         
         /* log drop */
         dropsClient.LogDropClaimAsync(new LogDropMessage
@@ -49,7 +49,7 @@ public partial class LobbyHub
             DiscordId = discordId,
             DropId = dropClaim.DropId,
             EventDropId = claimResult.EventDropId,
-            LobbyKey = lobbyContext.OwnerClaim.LobbyId,
+            LobbyKey = lobbyContext.OwnerClaim.LobbyId
         });
         
         /* reward drop only if not in league mode */
