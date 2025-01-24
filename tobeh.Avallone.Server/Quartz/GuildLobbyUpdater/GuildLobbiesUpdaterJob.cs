@@ -44,6 +44,10 @@ public class GuildLobbiesUpdaterJob(
         foreach (var lobby in memberLobbies) 
         {
             var lobbyDetails = lobbies[lobby.LobbyId];
+            
+            /* lobby generally restricted */
+            if(lobbyDetails.TypoSettings.WhitelistAllowedServers && lobbyDetails.TypoSettings.AllowedServers.Count == 0) continue;
+            
             foreach (var lobbyMember in lobby.Members)
             {
                 var member = members[lobbyMember.Login];
@@ -58,8 +62,12 @@ public class GuildLobbiesUpdaterJob(
                     lobbyDetails.SkribblState.LobbyId,
                     lobbyDetails.SkribblState.OwnerId is not null
                 );
-                
-                foreach (var server in member.ServerConnections)
+
+                /* add only to servers of member where whitelisted */
+                var servers = lobbyDetails.TypoSettings.WhitelistAllowedServers
+                    ? member.ServerConnections.Intersect(lobbyDetails.TypoSettings.AllowedServers)
+                    : member.ServerConnections;
+                foreach (var server in servers)
                 {
 
                     if(guildLobbies.TryGetValue(server, out var value)) value.Add(guildLobby);
