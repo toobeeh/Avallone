@@ -17,13 +17,15 @@ public class GuildLobbiesStore(
         _resetBlacklist.AddOrUpdate(guildId, true, (key, oldValue) => true);
 
         var containsChanges = false;
+        var addedNew = true;
         _guildLobbies.AddOrUpdate(guildId, lobbies, (key, oldValue) =>
         {
+            addedNew = false;
             containsChanges = (oldValue.Count != lobbies.Count) || oldValue.Except(lobbies).Any();
             return lobbies;
         });
 
-        return containsChanges;
+        return containsChanges || addedNew;
     }
     
     public List<GuildLobbyDto> GetLobbiesOfGuild(string guildId)
@@ -40,14 +42,11 @@ public class GuildLobbiesStore(
         _resetBlacklist.Clear();
     }
 
-    public void ResetUnchanged()
+    public List<string> ResetUnchanged()
     {
         logger.LogTrace("ResetUnchanged()");
         
         var unchanged = _guildLobbies.Keys.Except(_resetBlacklist.Keys);
-        foreach (var guildId in unchanged)
-        {
-            _guildLobbies.TryRemove(guildId, out _);
-        }
+        return unchanged.Where(guildId => _guildLobbies.TryRemove(guildId, out _)).ToList();
     }
 }

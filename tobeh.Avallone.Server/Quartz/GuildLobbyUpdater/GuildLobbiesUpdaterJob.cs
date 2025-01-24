@@ -84,6 +84,17 @@ public class GuildLobbiesUpdaterJob(
         }).ToList();
         
         await Task.WhenAll(updates);
-        guildLobbiesStore.ResetUnchanged();
+        
+        /* empty other which received no lobbies */
+        var emptied =  guildLobbiesStore.ResetUnchanged();
+        
+        /* notify cleared lobbies */
+        await Task.WhenAll(emptied
+            .Select(guild => guildLobbiesHubContext.Clients.
+                Group(guild)
+                .GuildLobbiesUpdated(new GuildLobbiesUpdatedDto(guild, new List<GuildLobbyDto>())
+                )
+            )
+        );
     }
 }
