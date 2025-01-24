@@ -29,6 +29,10 @@ public class TypoTokenHandler(
     {
         Logger.LogTrace("HandleAuthenticateAsync()");
         
+        /* if negotiation, skip authentication */
+        var segment = new Uri(CurrentUri).Segments.Last();
+        if(segment == "negotiate") return AuthenticateResult.NoResult();
+        
         // Get the token from the request
         var token = Request.Query["access_token"].FirstOrDefault() ?? Request.Headers["Authorization"].FirstOrDefault()?.Replace("Bearer ", "");
 
