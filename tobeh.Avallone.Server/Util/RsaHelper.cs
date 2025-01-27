@@ -23,4 +23,23 @@ public static class RsaHelper
         var ticks = stringContent[(id.Length + 1)..];
         return new LobbyOwnerClaim(DateTimeOffset.FromUnixTimeMilliseconds(Convert.ToInt64(ticks)), id, token);
     }
+    
+    public static string CreateDropToken(AnnouncedDropDetails dropDetails)
+    {
+        var bytes = Rsa.Encrypt(Encoding.UTF8.GetBytes($"{dropDetails.DropId}:{dropDetails.AnnouncementTimestamp.ToUnixTimeMilliseconds()}"), RSAEncryptionPadding.Pkcs1);
+        var token = Convert.ToBase64String(bytes);
+        return token;
+    }
+
+    public static AnnouncedDropDetails ParseDropToken(string token)
+    {
+        var content = Rsa.Decrypt(Convert.FromBase64String(token), RSAEncryptionPadding.Pkcs1);
+        var stringContent = Encoding.UTF8.GetString(content);
+        var id = stringContent.Split(":")[0];
+        var timestamp = stringContent[(id.Length + 1)..];
+        return new AnnouncedDropDetails(
+            Convert.ToInt64(id),
+            DateTimeOffset.FromUnixTimeMilliseconds(Convert.ToInt64(timestamp))
+        );
+    }
 }

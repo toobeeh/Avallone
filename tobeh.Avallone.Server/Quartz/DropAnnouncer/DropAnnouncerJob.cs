@@ -1,9 +1,11 @@
 using Google.Protobuf.WellKnownTypes;
 using Microsoft.AspNetCore.SignalR;
 using Quartz;
+using tobeh.Avallone.Server.Classes;
 using tobeh.Avallone.Server.Classes.Dto;
 using tobeh.Avallone.Server.Hubs;
 using tobeh.Avallone.Server.Hubs.Interfaces;
+using tobeh.Avallone.Server.Util;
 using tobeh.Valmar;
 
 namespace tobeh.Avallone.Server.Quartz.DropAnnouncer;
@@ -50,7 +52,11 @@ public class DropAnnouncerJob(
             
             var position = Convert.ToInt32(drop.Id % 100);
             await Task.Delay((int)(dropTime - DateTimeOffset.Now).TotalMilliseconds);
-            await lobbyHubContext.Clients.All.DropAnnounced(new DropAnnouncementDto(drop.Id, drop.EventDropId, position));
+
+            var dispatchTimestamp = DateTimeOffset.Now;
+            var dropToken = RsaHelper.CreateDropToken(new AnnouncedDropDetails(drop.Id, dispatchTimestamp));
+            await lobbyHubContext.Clients.All.DropAnnounced(new DropAnnouncementDto(dropToken, drop.EventDropId, position));
+            
             logger.LogInformation("Drop {dropId} announced", drop.Id);
         }
     }
