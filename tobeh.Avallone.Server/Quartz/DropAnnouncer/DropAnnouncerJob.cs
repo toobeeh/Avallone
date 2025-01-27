@@ -55,7 +55,7 @@ public class DropAnnouncerJob(
 
             var dispatchTimestamp = DateTimeOffset.Now;
             var dropToken = RsaHelper.CreateDropToken(new AnnouncedDropDetails(drop.Id, dispatchTimestamp));
-            await lobbyHubContext.Clients.All.DropAnnounced(new DropAnnouncementDto(dropToken, drop.EventDropId, position));
+            await lobbyHubContext.Clients.All.DropAnnounced(new DropAnnouncementDto(dropToken, drop.Id, drop.EventDropId, position));
             
             logger.LogInformation("Drop {dropId} announced", drop.Id);
         }
