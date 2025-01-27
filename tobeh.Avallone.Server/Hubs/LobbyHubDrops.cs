@@ -54,8 +54,8 @@ public partial class LobbyHub
         var resultNotification = new DropClaimResultDto(username, claimResult.FirstClaim, claimResult.ClearedDrop,
             claimResult.CatchMs, claimResult.LeagueWeight, dropAnnouncement.DropId, claimResult.LeagueMode);
         
-        var realDelay = dropAnnouncement.AnnouncementTimestamp - claimReceivedTimestamp;
-        logger.LogInformation("Received drop claim for {username} in {realDelay}ms, logged as {delay}", username, realDelay, claimResult.CatchMs);
+        var realDelay = (claimReceivedTimestamp - dropAnnouncement.AnnouncementTimestamp).TotalMilliseconds;
+        logger.LogInformation("Received drop claim for {username} / {userid} in {realDelay}ms, calculated as {delay} with difference of {diff}", username, discordId, realDelay, claimResult.CatchMs, claimResult.CatchMs - realDelay);
         
         /* log drop */
         dropsClient.LogDropClaimAsync(new LogDropMessage
