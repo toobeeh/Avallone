@@ -58,6 +58,10 @@ public class DropAnnouncerJob(
             await lobbyHubContext.Clients.All.DropAnnounced(new DropAnnouncementDto(dropToken, drop.Id, drop.EventDropId, position));
             
             logger.LogInformation("Drop {dropId} announced", drop.Id);
+            
+            /* clear drop after 2s */
+            await Task.Delay((int)dropTime.AddSeconds(2).Subtract(DateTimeOffset.Now).TotalMilliseconds);
+            await lobbyHubContext.Clients.All.DropCleared(new DropClearDto(drop.Id));
         }
     }
 }

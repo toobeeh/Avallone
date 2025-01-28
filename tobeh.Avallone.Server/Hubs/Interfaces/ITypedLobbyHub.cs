@@ -23,4 +23,5 @@ public interface ILobbyReceiver
     Task DropAnnounced(DropAnnouncementDto drop);
     Task AwardGifted(AwardGiftedDto award);
     Task DropClaimed(DropClaimResultDto claimResult);
+    Task DropCleared(DropClearDto drop);
 }
