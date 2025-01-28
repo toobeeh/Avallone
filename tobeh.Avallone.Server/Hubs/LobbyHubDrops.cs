@@ -57,7 +57,8 @@ public partial class LobbyHub
         }
         catch (RpcException e)
         {
-            throw new ForbiddenException(e.Message);
+            if (e.StatusCode == StatusCode.FailedPrecondition) throw new ForbiddenException(e.Status.Detail);
+            throw;
         }
         
         var resultNotification = new DropClaimResultDto(username, claimResult.FirstClaim, claimResult.ClearedDrop,
