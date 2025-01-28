@@ -17,6 +17,7 @@ public partial class LobbyHub
         
         var claimReceivedTimestamp = DateTimeOffset.UtcNow;
 
+        /* parse signed/encrypted announcement */
         AnnouncedDropDetails dropAnnouncement;
         try
         {
@@ -24,6 +25,7 @@ public partial class LobbyHub
         }
         catch (Exception e)
         {
+            logger.LogWarning(e, "Failed to parse drop token");
             throw new ForbiddenException("Failed to validate drop claim");
         }
         
@@ -42,6 +44,9 @@ public partial class LobbyHub
         {
             throw new EntityNotFoundException("Could not find player in lobby");
         }
+        
+        /* set last claimed drop to current id to prevent double claiming - throws if last claim is same id */
+        lobbyContextStore.MarkDropAsClaimed(Context.ConnectionId, dropAnnouncement.DropId);
         
         /* get league mode*/
         var leagueMode = lobby.Players.Count == 1 || lobby.Players.TrueForAll(p => p.Score == 0);

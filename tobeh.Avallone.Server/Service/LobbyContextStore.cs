@@ -69,5 +69,27 @@ public class LobbyContextStore(ILogger<LobbyContextStore> logger)
 
         return entries;
     }
+
+    public void MarkDropAsClaimed(string clientId, long dropId)
+    {
+        logger.LogTrace("MarkDropAsClaimed(clientId={clientId}, dropId={dropId})", clientId, dropId);
+        
+        if (!_connections.TryGetValue(clientId, out var context))
+        {
+            throw new EntityNotFoundException("No lobby context attached for connection id");
+        }
+        
+        if (context.LastClaimedDropId == dropId)
+        {
+            throw new ForbiddenException("Drop already claimed");
+        }
+        
+        var updated = _connections.TryUpdate(clientId, context with { LastClaimedDropId = dropId }, context);
+        
+        if (!updated)
+        {
+            throw new InvalidOperationException("Failed to update lobby context");
+        }
+    }
     
 }
