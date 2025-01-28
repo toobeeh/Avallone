@@ -1,3 +1,4 @@
+using Grpc.Core;
 using Microsoft.AspNetCore.Authorization;
 using tobeh.Avallone.Server.Classes;
 using tobeh.Avallone.Server.Classes.Dto;
@@ -46,11 +47,19 @@ public partial class LobbyHub
         var leagueMode = lobby.Players.Count == 1 || lobby.Players.TrueForAll(p => p.Score == 0);
         
         /* claim drop in valmar */
-        var claimResult = await dropsClient.ClaimDropAsync(new ClaimDropMessage
+        ClaimDropResultMessage claimResult; 
+        try {
+            claimResult = await dropsClient.ClaimDropAsync(new ClaimDropMessage
+            {
+                DropId = dropAnnouncement.DropId, 
+                LeagueMode = leagueMode
+            });
+        }
+        catch (RpcException e)
         {
-            DropId = dropAnnouncement.DropId, 
-            LeagueMode = leagueMode
-        });
+            throw new ForbiddenException(e.Message);
+        }
+        
         var resultNotification = new DropClaimResultDto(username, claimResult.FirstClaim, claimResult.ClearedDrop,
             claimResult.CatchMs, claimResult.LeagueWeight, dropAnnouncement.DropId, claimResult.LeagueMode);
         
