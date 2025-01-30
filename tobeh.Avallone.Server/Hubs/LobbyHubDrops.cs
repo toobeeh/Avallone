@@ -21,7 +21,7 @@ public partial class LobbyHub
         AnnouncedDropDetails dropAnnouncement;
         try
         {
-            dropAnnouncement = RsaHelper.ParseDropToken(dropClaim.DropToken);
+            dropAnnouncement = RsaHelper.ParseDropToken(rsaService.GetRsa(), dropClaim.DropToken);
         }
         catch (Exception e)
         {

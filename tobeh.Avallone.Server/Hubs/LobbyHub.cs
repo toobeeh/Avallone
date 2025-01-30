@@ -15,7 +15,8 @@ public partial class LobbyHub(
     LobbyContextStore lobbyContextStore,
     LobbyService lobbyService,
     Inventory.InventoryClient inventoryClient,
-    Drops.DropsClient dropsClient
+    Drops.DropsClient dropsClient,
+    RsaService rsaService
     ) : Hub<ILobbyReceiver>, ILobbyHub
 {
     public override async Task OnDisconnectedAsync(Exception? exception)

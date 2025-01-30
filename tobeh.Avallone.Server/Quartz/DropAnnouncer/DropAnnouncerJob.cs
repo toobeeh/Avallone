@@ -5,6 +5,7 @@ using tobeh.Avallone.Server.Classes;
 using tobeh.Avallone.Server.Classes.Dto;
 using tobeh.Avallone.Server.Hubs;
 using tobeh.Avallone.Server.Hubs.Interfaces;
+using tobeh.Avallone.Server.Service;
 using tobeh.Avallone.Server.Util;
 using tobeh.Valmar;
 
@@ -13,7 +14,8 @@ namespace tobeh.Avallone.Server.Quartz.DropAnnouncer;
 public class DropAnnouncerJob(
     ILogger<DropAnnouncerJob> logger, 
     Drops.DropsClient dropsClient,
-    IHubContext<LobbyHub, ILobbyReceiver> lobbyHubContext
+    IHubContext<LobbyHub, ILobbyReceiver> lobbyHubContext,
+    RsaService rsaService
     ) : IJob
 {
     public async Task Execute(IJobExecutionContext context)
@@ -54,7 +56,7 @@ public class DropAnnouncerJob(
             await Task.Delay((int)(dropTime - DateTimeOffset.Now).TotalMilliseconds);
 
             var dispatchTimestamp = DateTimeOffset.Now;
-            var dropToken = RsaHelper.CreateDropToken(new AnnouncedDropDetails(drop.Id, dispatchTimestamp));
+            var dropToken = RsaHelper.CreateDropToken(rsaService.GetRsa(), new AnnouncedDropDetails(drop.Id, dispatchTimestamp));
             await lobbyHubContext.Clients.All.DropAnnounced(new DropAnnouncementDto(dropToken, drop.Id, drop.EventDropId, position));
             
             logger.LogInformation("Drop {dropId} announced", drop.Id);

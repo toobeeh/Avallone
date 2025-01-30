@@ -77,7 +77,7 @@ public class TypoTokenHandler(
             
             return claims;
         }
-        catch (Exception ex)
+        catch
         {
             return null;
         }

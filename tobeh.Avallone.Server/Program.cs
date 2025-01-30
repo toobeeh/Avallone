@@ -40,6 +40,7 @@ class Program
             .AddQuartz(OnlineItemsUpdaterConfiguration.Configure)
             .AddQuartz(DropAnnouncerConfiguration.Configure)
             .AddQuartzHostedService(options => { options.WaitForJobsToComplete = true; })
+            .AddSingleton<RsaService>()
             .AddSingleton<GuildLobbiesStore>()
             .AddSingleton<LobbyContextStore>()
             .AddSingleton<LobbyStore>()
