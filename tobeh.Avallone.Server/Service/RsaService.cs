@@ -20,15 +20,15 @@ public class RsaService
             if(!File.Exists(PrivateKeyPath) || !File.Exists(PublicKeyPath))
             {
                 _rsa = RSA.Create(512);
-                File.WriteAllBytes(PrivateKeyPath, _rsa.ExportRSAPrivateKey());
-                File.WriteAllBytes(PublicKeyPath, _rsa.ExportRSAPublicKey());
+                File.WriteAllText(PrivateKeyPath, _rsa.ExportRSAPrivateKeyPem());
+                File.WriteAllText(PublicKeyPath, _rsa.ExportRSAPublicKeyPem());
             }
             else if (_rsa == null)
             {
                 /* load from path */
                 _rsa = RSA.Create();
-                _rsa.ImportRSAPrivateKey(File.ReadAllBytes(PrivateKeyPath), out _);
-                _rsa.ImportRSAPublicKey(File.ReadAllBytes(PublicKeyPath), out _);
+                _rsa.ImportFromPem(File.ReadAllText(PrivateKeyPath));
+                _rsa.ImportFromPem(File.ReadAllText(PublicKeyPath));
             }
         }
         finally
