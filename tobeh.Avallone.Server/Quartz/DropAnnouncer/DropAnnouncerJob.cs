@@ -15,7 +15,7 @@ public class DropAnnouncerJob(
     ILogger<DropAnnouncerJob> logger, 
     Drops.DropsClient dropsClient,
     IHubContext<LobbyHub, ILobbyReceiver> lobbyHubContext,
-    RsaService rsaService
+    CryptoService cryptoService
     ) : IJob
 {
     public async Task Execute(IJobExecutionContext context)
@@ -56,7 +56,7 @@ public class DropAnnouncerJob(
             await Task.Delay((int)(dropTime - DateTimeOffset.Now).TotalMilliseconds);
 
             var dispatchTimestamp = DateTimeOffset.Now;
-            var dropToken = RsaHelper.CreateDropToken(rsaService.GetRsa(), new AnnouncedDropDetails(drop.Id, dispatchTimestamp));
+            var dropToken = CryptoHelper.CreateDropToken(cryptoService, new AnnouncedDropDetails(drop.Id, dispatchTimestamp));
             await lobbyHubContext.Clients.All.DropAnnounced(new DropAnnouncementDto(dropToken, drop.Id, drop.EventDropId, position));
             
             logger.LogInformation("Drop {dropId} announced", drop.Id);

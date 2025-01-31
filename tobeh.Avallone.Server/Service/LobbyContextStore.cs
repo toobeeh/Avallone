@@ -6,7 +6,7 @@ using tobeh.Avallone.Server.Util;
 
 namespace tobeh.Avallone.Server.Service;
 
-public class LobbyContextStore(ILogger<LobbyContextStore> logger, RsaService rsaService)
+public class LobbyContextStore(ILogger<LobbyContextStore> logger, CryptoService cryptoService)
 {
     private readonly ConcurrentDictionary<string, LobbyContext> _connections = new();
     private readonly ConcurrentDictionary<string, LobbyContext> _detachedPending = new();
@@ -17,8 +17,8 @@ public class LobbyContextStore(ILogger<LobbyContextStore> logger, RsaService rsa
         logger.LogTrace("AttachContextToClient(id={id}, lobbyId={lobbyId}, ownerClaim={ownerClaim})", id, lobbyId, ownerClaim);
         
         var claim = ownerClaim != null ? 
-            RsaHelper.DecryptOwnerClaim(rsaService.GetRsa(), ownerClaim) : 
-            RsaHelper.CreateOwnerClaim(rsaService.GetRsa(), lobbyId, DateTimeOffset.Now);
+            CryptoHelper.DecryptOwnerClaim(cryptoService, ownerClaim) : 
+            CryptoHelper.CreateOwnerClaim(cryptoService, lobbyId, DateTimeOffset.Now);
         
         var context = new LobbyContext(claim, playerId, playerLogin, serverConnections);
         _connections.AddOrUpdate(id, context, (key, oldValue) => context);

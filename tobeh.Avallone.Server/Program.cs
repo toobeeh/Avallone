@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Authentication;
 using Quartz;
 using tobeh.Avallone.Server.Authentication;
+using tobeh.Avallone.Server.Config;
 using tobeh.Avallone.Server.Hubs;
 using tobeh.Avallone.Server.Quartz.DropAnnouncer;
 using tobeh.Avallone.Server.Quartz.GuildLobbyUpdater;
@@ -16,6 +17,8 @@ class Program
 {
     static async Task Main(string[] args)
     {
+        /*CryptoService.TestEncryption();*/
+        
         Console.WriteLine("Starting Avallone SignalR Server");
         CultureInfo.DefaultThreadCurrentCulture = CultureInfo.InvariantCulture;
         CultureInfo.DefaultThreadCurrentUICulture = CultureInfo.InvariantCulture;
@@ -39,8 +42,9 @@ class Program
             .AddQuartz(SkribblLobbyUpdaterConfiguration.Configure)
             .AddQuartz(OnlineItemsUpdaterConfiguration.Configure)
             .AddQuartz(DropAnnouncerConfiguration.Configure)
+            .Configure<CryptoConfig>(builder.Configuration.GetSection("Crypto"))
             .AddQuartzHostedService(options => { options.WaitForJobsToComplete = true; })
-            .AddSingleton<RsaService>()
+            .AddSingleton<CryptoService>()
             .AddSingleton<GuildLobbiesStore>()
             .AddSingleton<LobbyContextStore>()
             .AddSingleton<LobbyStore>()
