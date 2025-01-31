@@ -60,7 +60,6 @@
             if (_key == null)
             {
                 _key = Convert.FromBase64String(config.Value.Key);
-                _key = aes.Key;
             }
             aes.Key = _key;
             
