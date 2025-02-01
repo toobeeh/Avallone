@@ -31,7 +31,7 @@ public class DropAnnouncerJob(
             logger.LogError(e, "Failed to announce drop");
         }
         
-        /* schedule next drop check in 1s - min delay is 2s, so shannon is satisfied ;) */
+        /* schedule next drop check in 1s - min delay is 3s, so shannon is satisfied ;) */
         var newTrigger = TriggerBuilder.Create()
             .StartAt(DateTimeOffset.Now.AddSeconds(1))
             .Build();
@@ -61,8 +61,8 @@ public class DropAnnouncerJob(
             
             logger.LogInformation("Drop {dropId} announced", drop.Id);
             
-            /* clear drop after 2s */
-            await Task.Delay((int)dropTime.AddSeconds(2).Subtract(DateTimeOffset.Now).TotalMilliseconds);
+            /* clear drop after 3s */
+            await Task.Delay((int)dropTime.AddSeconds(3).Subtract(DateTimeOffset.Now).TotalMilliseconds);
             await lobbyHubContext.Clients.All.DropCleared(new DropClearDto(drop.Id));
         }
     }
