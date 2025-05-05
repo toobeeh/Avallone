@@ -80,7 +80,7 @@ public partial class LobbyHub
             ClaimTimestamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds(),
             DiscordId = discordId,
             DropId = dropAnnouncement.DropId,
-            EventDropId = claimResult.EventDropId,
+            EventDropId = leagueMode ? null : claimResult.EventDropId, // treat as regular drop if in league mode
             LobbyKey = lobbyContext.OwnerClaim.LobbyId
         });
         
