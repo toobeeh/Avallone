@@ -14,6 +14,7 @@ public partial class LobbyHub
     public async Task<DropClaimResultDto> ClaimDrop(DropClaimDto dropClaim)
     {
         logger.LogTrace("ClaimDrop(dropClaim={dropClaim})", dropClaim);
+        logger.LogInformation("Processing drop claim for token {dropToken}", dropClaim.DropToken);
         
         var claimReceivedTimestamp = DateTimeOffset.UtcNow;
 
@@ -86,6 +87,7 @@ public partial class LobbyHub
         /* reward drop only if not in league mode */
         if(!leagueMode)
         {
+            logger.LogInformation("Rewarding drop for {username} / {userid}", username, discordId);
             var value = claimResult.FirstClaim ? Math.Max(1, claimResult.LeagueWeight) : claimResult.LeagueWeight;
             dropsClient.RewardDropAsync(new RewardDropMessage
             {
@@ -93,6 +95,10 @@ public partial class LobbyHub
                 Login = lobbyContext.PlayerLogin,
                 Value = value
             });
+        }
+        else
+        {
+            logger.LogInformation("Drop was in league mode, not rewarding drop for {username} / {userid}", username, discordId);
         }
 
         /* notify others, and return result for own */
