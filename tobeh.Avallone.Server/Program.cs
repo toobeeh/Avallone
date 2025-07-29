@@ -9,6 +9,7 @@ using tobeh.Avallone.Server.Quartz.GuildLobbyUpdater;
 using tobeh.Avallone.Server.Quartz.OnlineItemsUpdater;
 using tobeh.Avallone.Server.Quartz.SkribblLobbyUpdater;
 using tobeh.Avallone.Server.Service;
+using tobeh.Avallone.Server.Util;
 using tobeh.Valmar.Client.Util;
 
 namespace tobeh.Avallone.Server;
@@ -57,7 +58,10 @@ class Program
                 options.DefaultChallengeScheme = TypoTokenDefaults.AuthenticationScheme;
             })
             .AddScheme<AuthenticationSchemeOptions, TypoTokenHandler>(TypoTokenDefaults.AuthenticationScheme, null).Services
-            .AddSignalR().Services
+            .AddSignalR().AddJsonProtocol(options =>
+            {
+                options.PayloadSerializerOptions.Converters.Add(new SafeJsonStringConverter());
+            }).Services
             .AddLogging(loggingBuilder => loggingBuilder
                 .AddConfiguration(builder.Configuration.GetSection("Logging"))
                 .AddConsole())
