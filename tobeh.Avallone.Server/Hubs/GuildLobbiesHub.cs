@@ -11,13 +11,16 @@ namespace tobeh.Avallone.Server.Hubs;
 public class GuildLobbiesHub(
     ILogger<GuildLobbiesHub> logger, 
     Guilds.GuildsClient guildsClient,
-    GuildLobbiesStore guildLobbiesStore
+    GuildLobbiesStore guildLobbiesStore,
+    MemberContext memberContext
     ) : Hub<IGuildLobbiesReceiver>, IGuildLobbiesHub
 {
     [Authorize]
     public async Task<GuildLobbiesUpdatedDto> SubscribeGuildLobbies(string guildId)
     {
         logger.LogTrace("SubscribeGuildLobbies(guildId={guildId})", guildId);
+
+        var member = await memberContext.GetMember();
         
         var guild = await guildsClient.GetGuildByIdAsync(new GetGuildByIdMessage { DiscordId = Convert.ToInt64(guildId) });
         if (guild is null)
@@ -25,12 +28,10 @@ public class GuildLobbiesHub(
             logger.LogWarning("Requested guild not found");
             throw new NullReferenceException("Guild does not exist");
         }
-
-        var authorized = Context.User?.Claims
-            .Where(claim => claim.Type == TypoTokenDefaults.GuildClaimName)
-            .Any(claim => claim.Value == guild.GuildId.ToString()) ?? false;
         
-        if(!authorized)
+        var connected = member.ServerConnections.Any(id => id == guild.GuildId);
+        
+        if(!connected)
         {
             logger.LogWarning("Unauthorized access to subscribe guild lobbies");
             throw new UnauthorizedAccessException("Unauthorized access to subscribe guild lobbies");

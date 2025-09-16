@@ -1,5 +1,7 @@
 ﻿using System.Globalization;
 using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
 using Quartz;
 using tobeh.Avallone.Server.Authentication;
 using tobeh.Avallone.Server.Config;
@@ -51,13 +53,59 @@ class Program
             .AddSingleton<LobbyStore>()
             .AddSingleton<OnlineItemsStore>()
             .AddScoped<LobbyService>()
+            .AddScoped<MemberContext>()
+            .AddSingleton<MemberContextCache>()
+            .AddHttpContextAccessor()
             .AddCors()
-            .AddAuthentication(options =>
+            
+            
+            /*.AddAuthentication(options =>
             {
                 options.DefaultAuthenticateScheme = TypoTokenDefaults.AuthenticationScheme;
                 options.DefaultChallengeScheme = TypoTokenDefaults.AuthenticationScheme;
             })
-            .AddScheme<AuthenticationSchemeOptions, TypoTokenHandler>(TypoTokenDefaults.AuthenticationScheme, null).Services
+            .AddScheme<AuthenticationSchemeOptions, TypoTokenHandler>(TypoTokenDefaults.AuthenticationScheme, null).Services*/
+            
+            /* support legacy and jwt tokens */
+            .AddAuthentication(options =>
+            {
+                options.DefaultAuthenticateScheme = "HybridScheme";
+                options.DefaultChallengeScheme = "HybridScheme";
+            })
+            .AddJwtBearer("Jwt", jwtOptions =>
+            {
+                jwtOptions.Authority = "https://api.typo.rip/openid";
+                jwtOptions.TokenValidationParameters = new TokenValidationParameters
+                {
+                    ValidateAudience = true,
+                    ValidAudience = "https://api.typo.rip"
+                };
+                
+                jwtOptions.Events = new JwtBearerEvents
+                {
+                    OnMessageReceived = context =>
+                    {
+                        var accessToken = context.Request.Query["access_token"];
+                        if (!string.IsNullOrEmpty(accessToken))
+                        {
+                            context.Token = accessToken;
+                        }
+                        return Task.CompletedTask;
+                    }
+                };
+            })
+            .AddScheme<AuthenticationSchemeOptions, TypoTokenHandler>(TypoTokenDefaults.AuthenticationScheme, null)
+            .AddPolicyScheme("HybridScheme", "JWT or Legacy", options =>
+            {
+                options.ForwardDefaultSelector = context =>
+                {
+                    var token = context.Request.Query["access_token"].FirstOrDefault() ?? context.Request.Headers["Authorization"].FirstOrDefault()?.Replace("Bearer ", "");
+                    return token is null || token.Contains('.') ? // crude check for JWT
+                        "Jwt" : TypoTokenDefaults.AuthenticationScheme;
+                };
+            }).Services
+                
+                
             .AddSignalR().AddJsonProtocol(options =>
             {
                 options.PayloadSerializerOptions.Converters.Add(new SafeJsonStringConverter());
@@ -80,12 +128,13 @@ class Program
         app.MapHub<GuildLobbiesHub>("/guildLobbies");
         app.MapHub<LobbyHub>("/lobby");
         app.MapHub<OnlineItemsHub>("/onlineItems");
-        app.UseAuthentication();
-        app.UseAuthorization();
 
         app.UseCors(options =>
         {
             options.WithOrigins("*").DisallowCredentials().WithHeaders("*").WithMethods("*");
         });
+        
+        app.UseAuthentication();
+        app.UseAuthorization();
     }
 }

@@ -16,7 +16,8 @@ public partial class LobbyHub(
     LobbyService lobbyService,
     Inventory.InventoryClient inventoryClient,
     Drops.DropsClient dropsClient,
-    CryptoService cryptoService
+    CryptoService cryptoService,
+    MemberContext memberContext
     ) : Hub<ILobbyReceiver>, ILobbyHub
 {
     public override async Task OnDisconnectedAsync(Exception? exception)
@@ -46,10 +47,9 @@ public partial class LobbyHub(
     public async Task<TypoLobbyStateDto> LobbyDiscovered(LobbyDiscoveredDto lobbyDiscovery)
     {
         logger.LogTrace("LobbyDiscovered(lobbyDiscovery={lobbyDiscovery})", lobbyDiscovery);
-
-        var login = TypoTokenHandlerHelper.ExtractLoginClaim(Context.User?.Claims ?? []);
-        var serverConnections = TypoTokenHandlerHelper.ExtractServerConnectionClaims(Context.User?.Claims ?? []);
-        var context = lobbyContextStore.AttachContextToClient(Context.ConnectionId, lobbyDiscovery.Lobby.Link, lobbyDiscovery.PlayerId, login, serverConnections, lobbyDiscovery.OwnerClaimToken);
+        
+        var member = await memberContext.GetMember();
+        var context = lobbyContextStore.AttachContextToClient(Context.ConnectionId, lobbyDiscovery.Lobby.Link, lobbyDiscovery.PlayerId, member.Login, member.ServerConnections.ToList(), lobbyDiscovery.OwnerClaimToken);
         
         // try to (re)claim ownership with existing token, eg when disconnected from lobby temporarily, or when server restarted
         var claimResult = await lobbyService.ClaimLobbyOwnership(context);

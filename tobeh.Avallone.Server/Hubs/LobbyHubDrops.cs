@@ -30,8 +30,9 @@ public partial class LobbyHub
             throw new ForbiddenException("Failed to validate drop claim");
         }
         
-        var discordId = TypoTokenHandlerHelper.ExtractDiscordIdClaim(Context.User?.Claims ?? []);
-        var dropBan = TypoTokenHandlerHelper.HasDropBanClaim(Context.User?.Claims ?? []);
+        var member = await memberContext.GetMember();
+        var discordId = member.DiscordId;
+        var dropBan = member.MappedFlags.Contains(MemberFlagMessage.DropBan);
         if (dropBan)
         {
             throw new ForbiddenException("User id drop banned");

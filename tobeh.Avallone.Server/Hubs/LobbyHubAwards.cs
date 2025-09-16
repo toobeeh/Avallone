@@ -14,7 +14,7 @@ public partial class LobbyHub
         logger.LogTrace("GiftAward(awardGift={awardGift})", awardGift);
         
         /* get required context details */
-        var login = TypoTokenHandlerHelper.ExtractLoginClaim(Context.User?.Claims ?? []);
+        var member = await memberContext.GetMember();
         var lobbyContext = lobbyContextStore.RetrieveContextFromClient(Context.ConnectionId);
         var lobby = lobbyService.GetSkribblLobbyState(lobbyContext);
         var drawer = lobby.Players.FirstOrDefault(player => player.IsDrawing);
@@ -27,7 +27,7 @@ public partial class LobbyHub
         /* assign award */
         var award = await inventoryClient.GiveAwardAsync(new GiveAwardMessage
         {
-            Login = login, 
+            Login = member.Login, 
             AwardInventoryId = awardGift.AwardInventoryId,
             LobbyId = lobbyContext.OwnerClaim.LobbyId,
             ReceiverLobbyPlayerId = drawer.PlayerId
