@@ -28,7 +28,7 @@ public class MemberContextCache(ILogger<MemberContextCache> logger)
         }
 
         // cached and not expired
-        if (timestampedRecord.Timestamp.AddSeconds(10) <= DateTimeOffset.UtcNow)
+        if (timestampedRecord.Timestamp.AddSeconds(10) >= DateTimeOffset.UtcNow)
         {
             return timestampedRecord.Record;
         }
