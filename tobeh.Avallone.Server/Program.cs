@@ -6,6 +6,7 @@ using Quartz;
 using tobeh.Avallone.Server.Authentication;
 using tobeh.Avallone.Server.Config;
 using tobeh.Avallone.Server.Hubs;
+using tobeh.Avallone.Server.Quartz.DecoyAnnouncer;
 using tobeh.Avallone.Server.Quartz.DropAnnouncer;
 using tobeh.Avallone.Server.Quartz.GuildLobbyUpdater;
 using tobeh.Avallone.Server.Quartz.OnlineItemsUpdater;
@@ -45,6 +46,7 @@ class Program
             .AddQuartz(SkribblLobbyUpdaterConfiguration.Configure)
             .AddQuartz(OnlineItemsUpdaterConfiguration.Configure)
             .AddQuartz(DropAnnouncerConfiguration.Configure)
+            .AddQuartz(DecoyAnnouncerConfiguration.Configure)
             .Configure<CryptoConfig>(builder.Configuration.GetSection("Crypto"))
             .AddQuartzHostedService(options => { options.WaitForJobsToComplete = true; })
             .AddSingleton<CryptoService>()

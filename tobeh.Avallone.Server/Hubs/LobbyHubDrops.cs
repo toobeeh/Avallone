@@ -31,6 +31,14 @@ public partial class LobbyHub
         }
         
         var member = await memberContext.GetMember();
+
+        // check decoy drop
+        if (dropAnnouncement.DropId == 1)
+        {
+            logger.LogWarning("Decoy drop claimed by {username} / {userid}", member.Login, member.DiscordId);
+            throw new EntityNotFoundException("Something went wrong");
+        }
+        
         var discordId = member.DiscordId;
         var dropBan = member.MappedFlags.Contains(MemberFlagMessage.DropBan);
         if (dropBan)
