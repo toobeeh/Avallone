@@ -44,5 +44,9 @@ public class DecoyAnnouncerJob(
         await lobbyHubContext.Clients.All.DropAnnounced(new DropAnnouncementDto(dropToken, dropId, -1, position));
             
         logger.LogInformation("Decoy Drop announced");
+            
+        /* clear drop after 3s */
+        await Task.Delay(2000); // clear after 2s
+        await lobbyHubContext.Clients.All.DropCleared(new DropClearDto(dropId));
     }
 }
