@@ -35,7 +35,7 @@ public partial class LobbyHub
         // check decoy drop
         if (dropAnnouncement.DropId == 1)
         {
-            logger.LogWarning("Decoy drop claimed by {username} / {userid}", member.Login, member.DiscordId);
+            logger.LogInformation("Decoy drop claimed by {username} / {userid}", member.Login, member.DiscordId);
             throw new EntityNotFoundException("Something went wrong");
         }
         
