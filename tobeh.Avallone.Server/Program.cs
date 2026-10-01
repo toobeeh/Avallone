@@ -45,8 +45,8 @@ class Program
             .AddQuartz(GuildLobbiesUpdaterConfiguration.Configure)
             .AddQuartz(SkribblLobbyUpdaterConfiguration.Configure)
             .AddQuartz(OnlineItemsUpdaterConfiguration.Configure)
-            .AddQuartz(DropAnnouncerConfiguration.Configure)
-            .AddQuartz(DecoyAnnouncerConfiguration.Configure)
+            /*.AddQuartz(DropAnnouncerConfiguration.Configure)
+            .AddQuartz(DecoyAnnouncerConfiguration.Configure)*/
             .Configure<CryptoConfig>(builder.Configuration.GetSection("Crypto"))
             .AddQuartzHostedService(options => { options.WaitForJobsToComplete = true; })
             .AddSingleton<CryptoService>()

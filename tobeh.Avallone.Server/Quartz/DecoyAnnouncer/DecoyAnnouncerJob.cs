@@ -36,7 +36,7 @@ public class DecoyAnnouncerJob(
     {
         logger.LogTrace("AnnounceDrop()");
         
-        var position = -100; // out of bounds position for decoy drops
+        var position = -1000; // out of bounds position for decoy drops
         var dropId = 1; // invalid drop id for decoy drops
 
         var dispatchTimestamp = DateTimeOffset.Now;
